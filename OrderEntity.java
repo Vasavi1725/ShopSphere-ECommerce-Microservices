@@ -1,4 +1,4 @@
-package com.example.ecommerce.order;
+package com.shopsphere.orderservice;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -30,7 +30,8 @@ public class OrderEntity {
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
-    protected OrderEntity() {}
+    protected OrderEntity() {
+    }
 
     public OrderEntity(String customerId, String productId, int quantity, BigDecimal amount) {
         this.customerId = customerId;
@@ -41,13 +42,35 @@ public class OrderEntity {
         this.createdAt = Instant.now();
     }
 
-    public Long getId() { return id; }
-    public String getCustomerId() { return customerId; }
-    public String getProductId() { return productId; }
-    public int getQuantity() { return quantity; }
-    public BigDecimal getAmount() { return amount; }
-    public OrderStatus getStatus() { return status; }
-    public Instant getCreatedAt() { return createdAt; }
+    public Long getId() {
+        return id;
+    }
 
-    public void setStatus(OrderStatus status) { this.status = status; }
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public OrderStatus getStatus() {
+        return status;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setStatus(OrderStatus status) {
+        this.status = status;
+    }
 }
