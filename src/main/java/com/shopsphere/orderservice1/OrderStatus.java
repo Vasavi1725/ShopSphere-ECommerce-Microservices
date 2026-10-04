@@ -1,5 +1,7 @@
 package com.shopsphere.orderservice1;
 
-public class OrderStatus {
-    
+public enum OrderStatus {
+    PENDING,
+    CONFIRMED,
+    CANCELLED
 }
