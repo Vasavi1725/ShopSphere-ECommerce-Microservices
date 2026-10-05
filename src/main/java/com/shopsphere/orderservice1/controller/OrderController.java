@@ -16,13 +16,28 @@ public class OrderController {
         this.orderRepository = orderRepository;
     }
 
+    // Get all orders
     @GetMapping
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
     }
 
+    // Get order by ID
+    @GetMapping("/{id}")
+    public Order getOrderById(@PathVariable Long id) {
+        return orderRepository.findById(id).orElse(null);
+    }
+
+    // Create new order
     @PostMapping
     public Order createOrder(@RequestBody Order order) {
         return orderRepository.save(order);
     }
+
+    // Delete order by ID
+    @DeleteMapping("/{id}")
+    public void deleteOrder(@PathVariable Long id) {
+        orderRepository.deleteById(id);
+    }
 }
+
