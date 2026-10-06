@@ -33,6 +33,22 @@ public class OrderController {
     public Order createOrder(@RequestBody Order order) {
         return orderRepository.save(order);
     }
+    // Update order by ID
+    @PutMapping("/{id}")
+    public Order updateOrder(@PathVariable Long id, @RequestBody Order updatedOrder) {
+
+        Order existingOrder = orderRepository.findById(id).orElse(null);
+
+        if (existingOrder == null) {
+            return null;
+        }
+
+        existingOrder.setProductName(updatedOrder.getProductName());
+        existingOrder.setQuantity(updatedOrder.getQuantity());
+        existingOrder.setPrice(updatedOrder.getPrice());
+
+        return orderRepository.save(existingOrder);
+    }
 
     // Delete order by ID
     @DeleteMapping("/{id}")
