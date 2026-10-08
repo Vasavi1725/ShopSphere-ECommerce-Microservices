@@ -10,14 +10,17 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long productId;
     private String productName;
     private int quantity;
     private double price;
 
+    // Required by JPA and JSON
     public Order() {
     }
 
-    public Order(String productName, int quantity, double price) {
+    public Order(Long productId, String productName, int quantity, double price) {
+        this.productId = productId;
         this.productName = productName;
         this.quantity = quantity;
         this.price = price;
@@ -25,6 +28,14 @@ public class Order {
 
     public Long getId() {
         return id;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
     public String getProductName() {

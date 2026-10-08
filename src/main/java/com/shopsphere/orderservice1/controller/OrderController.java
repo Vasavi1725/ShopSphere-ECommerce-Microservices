@@ -1,7 +1,8 @@
 package com.shopsphere.orderservice1.controller;
 
+import com.shopsphere.orderservice1.dto.CreateOrderRequest;
 import com.shopsphere.orderservice1.entity.Order;
-import com.shopsphere.orderservice1.repository.OrderRepository;
+import com.shopsphere.orderservice1.service.OrderService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,50 +11,37 @@ import java.util.List;
 @RequestMapping("/orders")
 public class OrderController {
 
-    private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
-    public OrderController(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
     }
 
-    // Get all orders
     @GetMapping
     public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+        return orderService.getAllOrders();
     }
 
-    // Get order by ID
     @GetMapping("/{id}")
     public Order getOrderById(@PathVariable Long id) {
-        return orderRepository.findById(id).orElse(null);
+        return orderService.getOrderById(id);
     }
 
-    // Create new order
     @PostMapping
-    public Order createOrder(@RequestBody Order order) {
-        return orderRepository.save(order);
+    public Order createOrder(@RequestBody CreateOrderRequest request) {
+        return orderService.createOrder(request);
     }
-    // Update order by ID
+
     @PutMapping("/{id}")
-    public Order updateOrder(@PathVariable Long id, @RequestBody Order updatedOrder) {
+    public Order updateOrder(
+            @PathVariable Long id,
+            @RequestBody Order updatedOrder) {
 
-        Order existingOrder = orderRepository.findById(id).orElse(null);
-
-        if (existingOrder == null) {
-            return null;
-        }
-
-        existingOrder.setProductName(updatedOrder.getProductName());
-        existingOrder.setQuantity(updatedOrder.getQuantity());
-        existingOrder.setPrice(updatedOrder.getPrice());
-
-        return orderRepository.save(existingOrder);
+        return orderService.updateOrder(id, updatedOrder);
     }
 
-    // Delete order by ID
     @DeleteMapping("/{id}")
     public void deleteOrder(@PathVariable Long id) {
-        orderRepository.deleteById(id);
+        orderService.deleteOrder(id);
     }
 }
-

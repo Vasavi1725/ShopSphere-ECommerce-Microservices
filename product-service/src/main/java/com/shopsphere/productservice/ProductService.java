@@ -13,22 +13,18 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
-    // Get all products
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
-    // Get product by ID
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElse(null);
     }
 
-    // Create product
     public Product createProduct(Product product) {
         return productRepository.save(product);
     }
 
-    // Update product
     public Product updateProduct(Long id, Product updatedProduct) {
 
         Product existingProduct =
@@ -46,8 +42,29 @@ public class ProductService {
         return productRepository.save(existingProduct);
     }
 
-    // Delete product
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
+    }
+
+    public Product reduceStock(Long id, int quantity) {
+
+        Product product =
+                productRepository.findById(id).orElse(null);
+
+        if (product == null) {
+            return null;
+        }
+
+        if (quantity <= 0) {
+            return null;
+        }
+
+        if (product.getQuantity() < quantity) {
+            return null;
+        }
+
+        product.setQuantity(product.getQuantity() - quantity);
+
+        return productRepository.save(product);
     }
 }
