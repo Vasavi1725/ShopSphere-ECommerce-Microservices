@@ -2,31 +2,32 @@
 package com.shopsphere.paymentservice.controller;
 
 import com.shopsphere.paymentservice.entity.Payment;
+import com.shopsphere.paymentservice.repository.PaymentRepository;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private final List<Payment> payments = new ArrayList<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final PaymentRepository paymentRepository;
+
+    public PaymentController(PaymentRepository paymentRepository) {
+        this.paymentRepository = paymentRepository;
+    }
 
     @GetMapping
     public List<Payment> getAllPayments() {
-        return payments;
+        return paymentRepository.findAll();
     }
 
     @GetMapping("/{id}")
     public Payment getPaymentById(@PathVariable Long id) {
-        return payments.stream()
-                .filter(payment -> payment.getId().equals(id))
-                .findFirst()
+        return paymentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Payment not found"));
     }
@@ -37,6 +38,7 @@ public class PaymentController {
 
         if (payment.getOrderId() == null
                 || payment.getOrderId() <= 0
+                || !Double.isFinite(payment.getAmount())
                 || payment.getAmount() <= 0
                 || payment.getPaymentMethod() == null
                 || payment.getPaymentMethod().isBlank()) {
@@ -44,11 +46,9 @@ public class PaymentController {
                     HttpStatus.BAD_REQUEST, "Invalid payment details");
         }
 
-        payment.setId(idGenerator.getAndIncrement());
+        payment.setId(null);
         payment.setStatus("PENDING");
 
-        payments.add(payment);
-
-        return payment;
+        return paymentRepository.save(payment);
     }
 }
