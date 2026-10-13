@@ -1,3 +1,4 @@
+
 package com.shopsphere.productservice;
 
 import org.springframework.web.bind.annotation.*;
@@ -42,11 +43,21 @@ public class ProductController {
         productService.deleteProduct(id);
     }
 
+    // Reduce stock when an order is placed
     @PutMapping("/{id}/reduce-stock")
     public Product reduceStock(
             @PathVariable Long id,
             @RequestParam int quantity) {
 
         return productService.reduceStock(id, quantity);
+    }
+
+    // Restore stock if payment creation fails
+    @PutMapping("/{id}/increase-stock")
+    public Product increaseStock(
+            @PathVariable Long id,
+            @RequestParam int quantity) {
+
+        return productService.increaseStock(id, quantity);
     }
 }

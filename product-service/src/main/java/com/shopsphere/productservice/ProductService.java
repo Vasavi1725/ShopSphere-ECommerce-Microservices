@@ -1,7 +1,7 @@
+
 package com.shopsphere.productservice;
 
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -26,7 +26,6 @@ public class ProductService {
     }
 
     public Product updateProduct(Long id, Product updatedProduct) {
-
         Product existingProduct =
                 productRepository.findById(id).orElse(null);
 
@@ -47,15 +46,10 @@ public class ProductService {
     }
 
     public Product reduceStock(Long id, int quantity) {
-
         Product product =
                 productRepository.findById(id).orElse(null);
 
-        if (product == null) {
-            return null;
-        }
-
-        if (quantity <= 0) {
+        if (product == null || quantity <= 0) {
             return null;
         }
 
@@ -64,6 +58,20 @@ public class ProductService {
         }
 
         product.setQuantity(product.getQuantity() - quantity);
+
+        return productRepository.save(product);
+    }
+
+    // Restore stock if payment creation fails
+    public Product increaseStock(Long id, int quantity) {
+        Product product =
+                productRepository.findById(id).orElse(null);
+
+        if (product == null || quantity <= 0) {
+            return null;
+        }
+
+        product.setQuantity(product.getQuantity() + quantity);
 
         return productRepository.save(product);
     }

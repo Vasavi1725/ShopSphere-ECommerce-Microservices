@@ -11,21 +11,31 @@ public class Order {
     private Long id;
 
     private Long productId;
+
     private String productName;
+
     private int quantity;
+
     private double price;
 
-    // Required by JPA and JSON
+    @Column(nullable = false)
+    private String orderStatus = "CREATED";
+
+    // Default constructor
     public Order() {
+        this.orderStatus = "CREATED";
     }
 
+    // Parameterized constructor
     public Order(Long productId, String productName, int quantity, double price) {
         this.productId = productId;
         this.productName = productName;
         this.quantity = quantity;
         this.price = price;
+        this.orderStatus = "CREATED";
     }
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -60,5 +70,15 @@ public class Order {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getOrderStatus() {
+        return orderStatus;
+    }
+
+    public void setOrderStatus(String orderStatus) {
+        this.orderStatus = (orderStatus == null)
+                ? "CREATED"
+                : orderStatus;
     }
 }

@@ -1,11 +1,16 @@
+
 package com.shopsphere.orderservice1.controller;
 
 import com.shopsphere.orderservice1.dto.CreateOrderRequest;
 import com.shopsphere.orderservice1.entity.Order;
 import com.shopsphere.orderservice1.service.OrderService;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/orders")
@@ -43,5 +48,22 @@ public class OrderController {
     @DeleteMapping("/{id}")
     public void deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
+    }
+
+    // Confirm an order after verifying successful payment
+    @PatchMapping("/{id}/confirm")
+    public ResponseEntity<?> confirmOrder(@PathVariable Long id) {
+
+        Order order = orderService.confirmOrder(id);
+
+        if (order == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "message",
+                            "Order not found or payment is not successful"
+                    ));
+        }
+
+        return ResponseEntity.ok(order);
     }
 }
