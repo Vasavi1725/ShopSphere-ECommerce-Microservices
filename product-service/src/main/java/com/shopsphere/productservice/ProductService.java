@@ -2,6 +2,8 @@
 package com.shopsphere.productservice;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -18,14 +20,26 @@ public class ProductService {
     }
 
     public Product getProductById(Long id) {
+        if (id == null) {
+            return null;
+        }
+
         return productRepository.findById(id).orElse(null);
     }
 
     public Product createProduct(Product product) {
+        if (product == null) {
+            throw new IllegalArgumentException("Product cannot be null");
+        }
+
         return productRepository.save(product);
     }
 
     public Product updateProduct(Long id, Product updatedProduct) {
+        if (id == null || updatedProduct == null) {
+            return null;
+        }
+
         Product existingProduct =
                 productRepository.findById(id).orElse(null);
 
@@ -42,18 +56,21 @@ public class ProductService {
     }
 
     public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
+        if (id != null && productRepository.existsById(id)) {
+            productRepository.deleteById(id);
+        }
     }
 
+    @Transactional
     public Product reduceStock(Long id, int quantity) {
-        Product product =
-                productRepository.findById(id).orElse(null);
-
-        if (product == null || quantity <= 0) {
+        if (id == null || quantity <= 0) {
             return null;
         }
 
-        if (product.getQuantity() < quantity) {
+        Product product =
+                productRepository.findByIdForUpdate(id).orElse(null);
+
+        if (product == null || product.getQuantity() < quantity) {
             return null;
         }
 
@@ -63,11 +80,16 @@ public class ProductService {
     }
 
     // Restore stock if payment creation fails
+    @Transactional
     public Product increaseStock(Long id, int quantity) {
-        Product product =
-                productRepository.findById(id).orElse(null);
+        if (id == null || quantity <= 0) {
+            return null;
+        }
 
-        if (product == null || quantity <= 0) {
+        Product product =
+                productRepository.findByIdForUpdate(id).orElse(null);
+
+        if (product == null) {
             return null;
         }
 

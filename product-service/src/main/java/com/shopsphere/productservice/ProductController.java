@@ -1,9 +1,11 @@
-
 package com.shopsphere.productservice;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/products")
@@ -15,49 +17,114 @@ public class ProductController {
         this.productService = productService;
     }
 
+    // Get all products
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public ResponseEntity<List<Product>> getAllProducts() {
+        return ResponseEntity.ok(productService.getAllProducts());
     }
 
+    // Get a product by ID
     @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id) {
-        return productService.getProductById(id);
+    public ResponseEntity<?> getProductById(@PathVariable Long id) {
+        Product product = productService.getProductById(id);
+
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Product not found"));
+        }
+
+        return ResponseEntity.ok(product);
     }
 
+    // Create a product
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
-        return productService.createProduct(product);
+    public ResponseEntity<?> createProduct(@RequestBody Product product) {
+        if (product == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Product data is required"));
+        }
+
+        Product savedProduct = productService.createProduct(product);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedProduct);
     }
 
+    // Update a product
     @PutMapping("/{id}")
-    public Product updateProduct(
+    public ResponseEntity<?> updateProduct(
             @PathVariable Long id,
             @RequestBody Product updatedProduct) {
 
-        return productService.updateProduct(id, updatedProduct);
+        Product product = productService.updateProduct(id, updatedProduct);
+
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Product not found or invalid data"));
+        }
+
+        return ResponseEntity.ok(product);
     }
 
+    // Delete a product
     @DeleteMapping("/{id}")
-    public void deleteProduct(@PathVariable Long id) {
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        if (productService.getProductById(id) == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Product not found"));
+        }
+
         productService.deleteProduct(id);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Product deleted successfully"));
     }
 
-    // Reduce stock when an order is placed
+    // Reduce stock
     @PutMapping("/{id}/reduce-stock")
-    public Product reduceStock(
+    public ResponseEntity<?> reduceStock(
             @PathVariable Long id,
             @RequestParam int quantity) {
 
-        return productService.reduceStock(id, quantity);
+        if (quantity <= 0) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Quantity must be greater than zero"));
+        }
+
+        Product product = productService.reduceStock(id, quantity);
+
+        if (product == null) {
+            Product existingProduct = productService.getProductById(id);
+
+            if (existingProduct == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "Product not found"));
+            }
+
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Insufficient stock available"));
+        }
+
+        return ResponseEntity.ok(product);
     }
 
-    // Restore stock if payment creation fails
+    // Restore stock
     @PutMapping("/{id}/increase-stock")
-    public Product increaseStock(
+    public ResponseEntity<?> increaseStock(
             @PathVariable Long id,
             @RequestParam int quantity) {
 
-        return productService.increaseStock(id, quantity);
+        if (quantity <= 0) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "Quantity must be greater than zero"));
+        }
+
+        Product product = productService.increaseStock(id, quantity);
+
+        if (product == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "Product not found"));
+        }
+
+        return ResponseEntity.ok(product);
     }
 }
