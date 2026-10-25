@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ShopSphere | Smart Shopping</title>
+  <style>
+    :root {
+      --ink: #17251f;
+      --green: #176b45;
+      --orange: #ff9b42;
+      --cream: #f8f7f1;
+      --muted: #68736d;
+      --white: #fff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--cream);
+    }
+    header {
+      padding: 18px 7%;
+      background: var(--white);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid #e7e9e3;
+    }
+    .brand { font-size: 24px; font-weight: 800; }
+    .brand span { color: var(--green); }
+    .cart {
+      border: 0; border-radius: 24px; padding: 11px 18px;
+      background: var(--green); color: white; font-weight: 700;
+    }
+    .hero {
+      margin: 28px auto; width: 86%; max-width: 1250px;
+      padding: 48px; border-radius: 22px;
+      background: linear-gradient(120deg, #174f37, #287d52);
+      color: white; display: flex; align-items: center;
+      justify-content: space-between; gap: 24px;
+    }
+    .hero h1 { font-size: clamp(32px, 5vw, 54px); margin: 0 0 14px; }
+    .hero p { max-width: 540px; line-height: 1.7; color: #e4f0e7; }
+    .hero .tag {
+      display: inline-block; background: var(--orange); color: #35200c;
+      padding: 8px 13px; border-radius: 20px; font-weight: 700;
+    }
+    main { width: 86%; max-width: 1250px; margin: 36px auto 70px; }
+    .section-heading {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+    }
+    h2 { margin: 0; font-size: 28px; }
+    #status { color: var(--muted); font-size: 14px; }
+    #products {
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+    .product {
+      background: white; border: 1px solid #e8e9e3; border-radius: 16px;
+      padding: 23px; display: flex; flex-direction: column; gap: 12px;
+      box-shadow: 0 5px 20px #1b38200a;
+    }
+
+    .product .symbol {
+      width: 100%;
+      height: 140px;
+      padding: 12px;
+      box-sizing: border-box;
+      border-radius: 12px;
+      background: #f7f8f6;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .product .symbol img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 180px;
+      object-fit: contain;
+      object-position: center;
+      border-radius: 8px;
+    }
+    .product .symbol span {
+      display: none;
+      width: 100%;
+      height: 100%;
+      place-items: center;
+      font-size: 44px;
+    }
+
+    .product h3 { margin: 0; font-size: 19px; }
+    .description { color: var(--muted); line-height: 1.5; flex: 1; }
+    .price { font-size: 24px; font-weight: 800; }
+    .stock { font-size: 13px; color: var(--green); }
+    .stock.out { color: #b33a2c; }
+    .buy {
+      border: 0; border-radius: 9px; padding: 12px;
+      background: var(--orange); color: #35200c; font-weight: 800;
+      cursor: pointer;
+    }
+    .buy:disabled { opacity: .5; cursor: not-allowed; }
+    .panel {
+      margin-top: 30px; background: white; border: 1px solid #e8e9e3;
+      border-radius: 16px; padding: 24px;
+    }
+    .panel h2 { font-size: 22px; margin-bottom: 15px; }
+    .cart-line {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; border-bottom: 1px solid #eee; padding: 12px 0;
+    }
+    .cart-line button {
+      border: 1px solid #ddd; background: white; border-radius: 7px;
+      padding: 5px 10px; cursor: pointer;
+    }
+    .checkout {
+      margin-top: 18px; border: 0; border-radius: 9px;
+      padding: 13px 18px; background: var(--green); color: white;
+      font-weight: 700; cursor: pointer;
+    }
+    .checkout:disabled { opacity: .5; cursor: not-allowed; }
+    footer {
+      padding: 24px; text-align: center; color: var(--muted);
+      background: white; border-top: 1px solid #e7e9e3;
+    }
+
+    .auth-screen {
+      min-height: 100vh; display: grid; place-items: center; padding: 24px;
+      background: linear-gradient(135deg, #174f37, #287d52);
+    }
+    .auth-card {
+      width: 100%; max-width: 430px; padding: 32px; border-radius: 18px;
+      background: white; box-shadow: 0 18px 50px #102b1d33;
+    }
+    .auth-card h1 { margin: 0 0 8px; font-size: 30px; }
+    .auth-card p { color: var(--muted); line-height: 1.5; }
+    .auth-card label { display: block; margin: 14px 0 6px; font-weight: 700; }
+    .auth-card input {
+      width: 100%; padding: 12px; border: 1px solid #d8ded8; border-radius: 8px;
+      font: inherit;
+    }
+    .auth-submit {
+      width: 100%; margin-top: 20px; padding: 13px; border: 0; border-radius: 9px;
+      background: var(--orange); color: #35200c; font-weight: 800; cursor: pointer;
+    }
+    .auth-switch { text-align: center; margin-top: 18px; }
+    .auth-switch button {
+      border: 0; background: none; color: var(--green); font-weight: 800; cursor: pointer;
+    }
+    #auth-message { min-height: 20px; font-size: 14px; color: #b33a2c; }
+    .hidden { display: none !important; }
+    .account-actions { display: flex; align-items: center; gap: 12px; }
+    .logout {
+      border: 1px solid #d8ded8; border-radius: 22px; padding: 10px 14px;
+      background: white; font-weight: 700; cursor: pointer;
+    }
+
+    @media (max-width: 850px) {
+      #products { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero { padding: 32px; }
+    }
+    @media (max-width: 560px) {
+      header, .hero, main { width: 92%; }
+      header { padding: 16px 4%; }
+      .hero { margin-top: 18px; padding: 24px; }
+      #products { grid-template-columns: 1fr; }
+      .brand { font-size: 21px; }
+    }
+  </style>
+</head>
+<body>
+<section class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="brand">Shop<span>Sphere</span></div>
+    <h1 id="auth-title">Create your account</h1>
+    <p id="auth-subtitle">Create an account to open your ShopSphere dashboard.</p>
+    <form id="auth-form">
+      <div id="auth-name-wrap">
+        <label for="auth-name">Full name</label>
+        <input id="auth-name" autocomplete="name" placeholder="Enter your name" required>
+      </div>
+      <label for="auth-email">Email address</label>
+      <input id="auth-email" type="email" autocomplete="email" placeholder="you@example.com" required>
+      <label for="auth-password">Password</label>
+      <input id="auth-password" type="password" minlength="6" autocomplete="new-password" placeholder="At least 6 characters" required>
+      <button class="auth-submit" id="auth-submit" type="submit">Create account</button>
+      <p id="auth-message" role="status" aria-live="polite"></p>
+    </form>
+    <div class="auth-switch">
+      <span id="auth-switch-text">Already have an account?</span>
+      <button type="button" id="auth-switch-button">Sign in</button>
+    </div>
+    <p style="font-size:12px">Demo account only: this frontend stores account details in this browser. Do not use a real or reused password.</p>
+  </div>
+</section>
+
+<div id="dashboard" class="hidden">
+  <header>
+    <div class="brand">Shop<span>Sphere</span></div>
+    <div class="account-actions">
+      <button class="cart" onclick="document.querySelector('#cart-panel').scrollIntoView({behavior:'smooth'})">
+        Cart (<span id="cart-count">0</span>)
+      </button>
+      <button class="logout" type="button" onclick="logout()">Sign out</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <span class="tag">YOUR EVERYDAY MARKETPLACE</span>
+      <h1>Good finds.<br>Better shopping.</h1>
+      <p>Explore products, check live stock availability, and try our demo checkout powered by ShopSphere microservices.</p>
+    </div>
+  </section>
+
+  <main>
+    <div class="section-heading">
+      <h2>Featured products</h2>
+      <span id="status">Connecting to Product Service…</span>
+    </div>
+    <div id="products"></div>
+
+    <section class="panel" id="cart-panel">
+      <h2>Your shopping cart</h2>
+      <div id="cart-items">Your cart is empty.</div>
+      <div id="cart-total" style="margin-top:15px;font-weight:800"></div>
+      <button class="checkout" id="checkout" onclick="checkout()" disabled>
+        Place demo order
+      </button>
+      <p id="checkout-status" role="status" aria-live="polite" style="line-height:1.6"></p>
+      <p style="font-size:12px;color:#68736d">
+        Demo only: this does not collect real payment details or charge money.
+      </p>
+    </section>
+  </main>
+
+  <footer>ShopSphere · A Java Spring Boot microservices portfolio project</footer>
+</div>
+
+<script>
+  // Frontend-only demo account gate. This is not production authentication.
+  const AUTH_KEY = 'shopsphere_demo_account_v1';
+  let authMode = 'signup';
+
+  function showAuthMessage(message) {
+    document.querySelector('#auth-message').textContent = message;
+  }
+
+  function setAuthMode(mode) {
+    authMode = mode;
+    const signup = mode === 'signup';
+    document.querySelector('#auth-title').textContent = signup ? 'Create your account' : 'Welcome back';
+    document.querySelector('#auth-subtitle').textContent = signup
+            ? 'Create an account to open your ShopSphere dashboard.'
+            : 'Sign in with your demo account to continue shopping.';
+    document.querySelector('#auth-name-wrap').classList.toggle('hidden', !signup);
+    document.querySelector('#auth-name').required = signup;
+    document.querySelector('#auth-password').autocomplete = signup ? 'new-password' : 'current-password';
+    document.querySelector('#auth-submit').textContent = signup ? 'Create account' : 'Sign in';
+    document.querySelector('#auth-switch-text').textContent = signup ? 'Already have an account?' : 'New to ShopSphere?';
+    document.querySelector('#auth-switch-button').textContent = signup ? 'Sign in' : 'Create account';
+    showAuthMessage('');
+  }
+
+  function openDashboard(name) {
+    document.querySelector('#auth-screen').classList.add('hidden');
+    document.querySelector('#dashboard').classList.remove('hidden');
+    document.querySelector('.hero h1').innerHTML = 'Welcome to ShopSphere,<br>' + escapeHtml(name || 'Shopper') + '!';
+    loadProducts();
+  }
+
+  function logout() {
+    sessionStorage.removeItem('shopsphere_demo_signed_in');
+    document.querySelector('#dashboard').classList.add('hidden');
+    document.querySelector('#auth-screen').classList.remove('hidden');
+    document.querySelector('.hero h1').innerHTML = 'Good finds.<br>Better shopping.';
+    document.querySelector('#auth-form').reset();
+    setAuthMode('signin');
+  }
+
+  document.querySelector('#auth-switch-button').addEventListener('click', () => {
+    setAuthMode(authMode === 'signup' ? 'signin' : 'signup');
+  });
+
+  document.querySelector('#auth-form').addEventListener('submit', event => {
+    event.preventDefault();
+    const name = document.querySelector('#auth-name').value.trim();
+    const email = document.querySelector('#auth-email').value.trim().toLowerCase();
+    const password = document.querySelector('#auth-password').value;
+    let account = null;
+    try { account = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (_) {}
+
+    if (authMode === 'signup') {
+      if (!name) return showAuthMessage('Please enter your name.');
+      if (account && account.email === email) return showAuthMessage('This email already has a demo account. Please sign in.');
+      account = { name, email, password };
+      localStorage.setItem(AUTH_KEY, JSON.stringify(account));
+    } else {
+      if (!account || account.email !== email || account.password !== password) {
+        return showAuthMessage('Email or password is incorrect. Create a demo account first if needed.');
+      }
+    }
+
+    sessionStorage.setItem('shopsphere_demo_signed_in', 'true');
+    openDashboard(account.name);
+  });
+
+  const API = {
+    products: 'http://localhost:8082/products',
+    orders: 'http://localhost:8081/orders',
+    payments: 'http://localhost:8083/payments'
+  };
+
+  let products = [];
+  const cart = new Map();
+  function productSymbol(name) {
+    const productName = String(name || '').toLowerCase();
+
+    if (productName.includes('laptop') ||
+            productName.includes('computer') ||
+            productName.includes('notebook')) {
+      return '💻';
+    }
+
+    if (productName.includes('headphone') ||
+            productName.includes('headset') ||
+            productName.includes('earphone')) {
+      return '🎧';
+    }
+
+    if (productName.includes('watch')) return '⌚';
+    if (productName.includes('phone')) return '📱';
+    if (productName.includes('camera')) return '📷';
+    if (productName.includes('mouse')) return '🖱️';
+    if (productName.includes('game')) return '🎮';
+    if (productName.includes('bag')) return '🎒';
+
+    return '📦';
+  }
+
+  function money(value) {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency', currency: 'INR', maximumFractionDigits: 2
+    }).format(value);
+  }
+
+  async function loadProducts() {
+    const status = document.querySelector('#status');
+    try {
+      const response = await fetch(API.products);
+      if (!response.ok) throw new Error('Product Service returned HTTP ' + response.status);
+      products = await response.json();
+      status.textContent = products.length
+              ? `${products.length} products loaded from your backend`
+              : 'No products found. Add products to your database first.';
+      renderProducts();
+    } catch (error) {
+      status.textContent = 'Cannot connect to Product Service';
+      document.querySelector('#products').innerHTML =
+              `<div class="panel" style="grid-column:1/-1">
+            <strong>Products are not available yet.</strong>
+            <p>Start the Product Service on port 8082 and make sure its database is running.</p>
+            <p style="color:#68736d">${escapeHtml(error.message)}</p>
+            <button class="buy" onclick="loadProducts()">Try again</button>
+          </div>`;
+    }
+  }
+
+  function productImage(name) {
+    const n = String(name || '').toLowerCase();
+
+    const images = [
+      {
+        keywords: ['laptop'],
+        url: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+
+        keywords: ['headphone'],
+        url: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+
+      {
+        keywords: ['smart watch', 'watch'],
+        url: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['smartphone', 'phone'],
+        url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['backpack', 'bag'],
+        url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['camera'],
+        url: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['mouse'],
+        url: 'https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['gaming controller'],
+        url: 'https://images.unsplash.com/photo-1592840496694-26d035b52b48?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['bluetooth speaker'],
+        url: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['tablet'],
+        url: 'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['monitor'],
+        url: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['keyboard'],
+        url: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['power bank'],
+        url:  'https://images.unsplash.com/photo-1628557118391-56cd62c9f2cb?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['printer'],
+        url: 'https://images.unsplash.com/photo-1706895040634-62055892cbbb?auto=format&fit=clip&w=600&h=600&q=80'
+      },
+      {
+        keywords: ['usb flash drive'],
+        url: 'https://images.unsplash.com/photo-1618410320928-25228d811631?auto=format&fit=clip&w=600&h=600&q=80'
+      }
+    ];
+
+    const match = images.find(item =>
+            item.keywords.some(keyword => n.includes(keyword))
+    );
+
+    return match ? match.url : '';
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    })[char]);
+  }
+
+  function renderProducts() {
+    const container = document.querySelector('#products');
+    container.innerHTML = products.map((p, index) => {
+      const stock = Number(p.quantity) || 0;
+      return `<article class="product">
+        <div class="symbol">
+
+<img
+  src="${productImage(p.name)}"
+  alt="${escapeHtml(p.name)}"
+  loading="lazy"
+  onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+>
+
+  <span style="display:none;width:100%;height:100%;place-items:center;font-size:44px;" aria-hidden="true">${productSymbol(p.name)}</span>
+</div>
+          <h3>${escapeHtml(p.name)}</h3>
+          <div class="description">${escapeHtml(p.description || 'Discover this product from ShopSphere.')}</div>
+          <div class="price">${money(Number(p.price) || 0)}</div>
+          <div class="stock ${stock <= 0 ? 'out' : ''}">
+            ${stock > 0 ? `${stock} available` : 'Out of stock'}
+          </div>
+          <button class="buy" ${stock <= 0 ? 'disabled' : ''}
+            onclick="addToCart(${Number(p.id)})">Add to cart</button>
+        </article>`;
+    }).join('');
+  }
+
+  function addToCart(id) {
+    const product = products.find(p => Number(p.id) === id);
+    if (!product) return;
+    const existing = cart.get(id);
+    if ((existing?.quantity || 0) >= Number(product.quantity)) {
+      alert('You have reached the available stock for this product.');
+      return;
+    }
+    cart.set(id, { product, quantity: (existing?.quantity || 0) + 1 });
+    renderCart();
+  }
+
+  function changeQuantity(id, amount) {
+    const item = cart.get(id);
+    if (!item) return;
+    const next = item.quantity + amount;
+    if (next <= 0) cart.delete(id);
+    else if (next <= Number(item.product.quantity)) item.quantity = next;
+    else alert('Not enough stock available.');
+    renderCart();
+  }
+
+  function renderCart() {
+    let count = 0, total = 0;
+    const lines = [...cart.entries()];
+    lines.forEach(([, item]) => {
+      count += item.quantity;
+      total += Number(item.product.price) * item.quantity;
+    });
+    document.querySelector('#cart-count').textContent = count;
+    document.querySelector('#cart-items').innerHTML = lines.length
+            ? lines.map(([id, item]) => `<div class="cart-line">
+            <span>${escapeHtml(item.product.name)} × ${item.quantity}</span>
+            <span>${money(item.product.price * item.quantity)}
+              <button onclick="changeQuantity(${id},-1)" aria-label="Remove one">−</button>
+              <button onclick="changeQuantity(${id},1)" aria-label="Add one">+</button>
+            </span>
+          </div>`).join('')
+            : 'Your cart is empty.';
+    document.querySelector('#cart-total').textContent = lines.length ? 'Total: ' + money(total) : '';
+    document.querySelector('#checkout').disabled = !lines.length;
+  }
+
+  async function checkout() {
+    const button = document.querySelector('#checkout');
+    const output = document.querySelector('#checkout-status');
+    button.disabled = true;
+    output.textContent = 'Creating your order…';
+
+    try {
+      // The current Order Service accepts one product per order.
+      // Submit each cart line as its own order.
+      const createdOrders = [];
+      for (const [, item] of cart) {
+        const response = await fetch(API.orders, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: item.product.id,
+            quantity: item.quantity
+          })
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.id) {
+          throw new Error(data?.message || `Order could not be created (HTTP ${response.status}).`);
+        }
+        createdOrders.push(data);
+      }
+
+      const summary = createdOrders.map(order =>
+              `Order #${order.id}: ${order.orderStatus || 'created'}`
+      ).join('\n');
+
+      output.style.whiteSpace = 'pre-line';
+      output.textContent = 'Order request completed.\n' + summary +
+              '\n\nPayments are pending. This demo does not charge a real payment. ' +
+              'Use your backend test flow to mark a payment successful and confirm an order.';
+
+      cart.clear();
+      renderCart();
+      await loadProducts();
+    } catch (error) {
+      output.textContent = 'Checkout could not finish: ' + error.message +
+              ' Check the service status and order history before trying again.';
+    } finally {
+      button.disabled = cart.size === 0;
+    }
+  }
+
+  setAuthMode('signup');
+  // Keep the account page first on every fresh page load.
+  const savedAccount = (() => {
+    try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (_) { return null; }
+  })();
+  if (savedAccount) setAuthMode('signin');
+</script>
+</body>
+</html>
