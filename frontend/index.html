@@ -108,6 +108,7 @@
     .panel {
       margin-top: 30px; background: white; border: 1px solid #e8e9e3;
       border-radius: 16px; padding: 24px;
+
     }
     .panel h2 { font-size: 22px; margin-bottom: 15px; }
     .cart-line {
@@ -243,9 +244,8 @@
 </div>
 
 <script>
-  // Frontend-only demo account gate. This is not production authentication.
-  const AUTH_KEY = 'shopsphere_demo_account_v1';
   let authMode = 'signup';
+  let currentCredentials = null;
 
   function showAuthMessage(message) {
     document.querySelector('#auth-message').textContent = message;
@@ -256,8 +256,8 @@
     const signup = mode === 'signup';
     document.querySelector('#auth-title').textContent = signup ? 'Create your account' : 'Welcome back';
     document.querySelector('#auth-subtitle').textContent = signup
-            ? 'Create an account to open your ShopSphere dashboard.'
-            : 'Sign in with your demo account to continue shopping.';
+      ? 'Create an account to open your ShopSphere dashboard.'
+      : 'Sign in with your ShopSphere account.';
     document.querySelector('#auth-name-wrap').classList.toggle('hidden', !signup);
     document.querySelector('#auth-name').required = signup;
     document.querySelector('#auth-password').autocomplete = signup ? 'new-password' : 'current-password';
@@ -275,7 +275,7 @@
   }
 
   function logout() {
-    sessionStorage.removeItem('shopsphere_demo_signed_in');
+    currentCredentials = null;
     document.querySelector('#dashboard').classList.add('hidden');
     document.querySelector('#auth-screen').classList.remove('hidden');
     document.querySelector('.hero h1').innerHTML = 'Good finds.<br>Better shopping.';
@@ -283,33 +283,60 @@
     setAuthMode('signin');
   }
 
+  function basicAuthHeader() {
+    if (!currentCredentials) throw new Error('Please sign in again before checkout.');
+    return 'Basic ' + btoa(unescape(encodeURIComponent(
+      currentCredentials.email + ':' + currentCredentials.password
+    )));
+  }
+
   document.querySelector('#auth-switch-button').addEventListener('click', () => {
     setAuthMode(authMode === 'signup' ? 'signin' : 'signup');
   });
 
-  document.querySelector('#auth-form').addEventListener('submit', event => {
+  document.querySelector('#auth-form').addEventListener('submit', async event => {
     event.preventDefault();
+    const button = document.querySelector('#auth-submit');
+    button.disabled = true;
+
     const name = document.querySelector('#auth-name').value.trim();
     const email = document.querySelector('#auth-email').value.trim().toLowerCase();
     const password = document.querySelector('#auth-password').value;
-    let account = null;
-    try { account = JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (_) {}
 
-    if (authMode === 'signup') {
-      if (!name) return showAuthMessage('Please enter your name.');
-      if (account && account.email === email) return showAuthMessage('This email already has a demo account. Please sign in.');
-      account = { name, email, password };
-      localStorage.setItem(AUTH_KEY, JSON.stringify(account));
-    } else {
-      if (!account || account.email !== email || account.password !== password) {
-        return showAuthMessage('Email or password is incorrect. Create a demo account first if needed.');
+    try {
+      if (authMode === 'signup') {
+        if (!name) throw new Error('Please enter your name.');
+        const response = await fetch('http://localhost:8081/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(data?.error || data?.message || `Signup failed (HTTP ${response.status}).`);
+        }
       }
+
+      const authorization = 'Basic ' + btoa(unescape(encodeURIComponent(email + ':' + password)));
+      const check = await fetch('http://localhost:8081/orders', {
+        headers: { 'Authorization': authorization }
+      });
+      if (check.status === 401 || check.status === 403) {
+        throw new Error('Email or password is incorrect.');
+      }
+      if (!check.ok) throw new Error(`Sign-in check failed (HTTP ${check.status}).`);
+
+      currentCredentials = { email, password };
+      document.querySelector('#auth-password').value = '';
+      openDashboard(name || email.split('@')[0]);
+    } catch (error) {
+      currentCredentials = null;
+      showAuthMessage(error.message +
+        (error instanceof TypeError ? ' Check the Order Service and its CORS settings.' : ''));
+    } finally {
+      button.disabled = false;
     }
-
-    sessionStorage.setItem('shopsphere_demo_signed_in', 'true');
-    openDashboard(account.name);
   });
-
   const API = {
     products: 'http://localhost:8082/products',
     orders: 'http://localhost:8081/orders',
@@ -536,7 +563,7 @@
       for (const [, item] of cart) {
         const response = await fetch(API.orders, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': basicAuthHeader() },
           body: JSON.stringify({
             productId: item.product.id,
             quantity: item.quantity
@@ -570,11 +597,7 @@
   }
 
   setAuthMode('signup');
-  // Keep the account page first on every fresh page load.
-  const savedAccount = (() => {
-    try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (_) { return null; }
-  })();
-  if (savedAccount) setAuthMode('signin');
 </script>
 </body>
 </html>
+
