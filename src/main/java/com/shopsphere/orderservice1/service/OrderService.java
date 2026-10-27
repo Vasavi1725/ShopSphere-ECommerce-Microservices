@@ -1,5 +1,7 @@
 package com.shopsphere.orderservice1.service;
 
+import com.shopsphere.orderservice1.event.OrderEventPublisher;
+
 import com.shopsphere.orderservice1.dto.CreateOrderRequest;
 import com.shopsphere.orderservice1.dto.PaymentResponse;
 import com.shopsphere.orderservice1.dto.ProductResponse;
@@ -21,16 +23,19 @@ public class OrderService {
     private final RestClient productRestClient;
     private final RestClient paymentRestClient;
     private final RestClient notificationRestClient;
+    private final OrderEventPublisher orderEventPublisher;
 
     public OrderService(
             OrderRepository orderRepository,
             @Qualifier("productRestClient") RestClient productRestClient,
             @Qualifier("paymentRestClient") RestClient paymentRestClient,
-@Qualifier("notificationRestClient") RestClient notificationRestClient) {
+            @Qualifier("notificationRestClient") RestClient notificationRestClient,
+            OrderEventPublisher orderEventPublisher) {
         this.orderRepository = orderRepository;
         this.productRestClient = productRestClient;
         this.paymentRestClient = paymentRestClient;
         this.notificationRestClient = notificationRestClient;
+        this.orderEventPublisher = orderEventPublisher;
     }
 
     public List<Order> getAllOrders() {
@@ -208,6 +213,15 @@ public class OrderService {
 
        order.setOrderStatus("CONFIRMED");
 Order confirmedOrder = orderRepository.save(order);
+
+// Publish the confirmation event without losing the saved order
+// if Kafka is temporarily unavailable.
+try {
+    orderEventPublisher.publishOrderConfirmed(confirmedOrder.getId());
+} catch (RuntimeException exception) {
+    System.err.println("Kafka event publishing failed for order "
+            + confirmedOrder.getId() + ": " + exception.getMessage());
+}
 
 // Create a notification record after order confirmation.
 Map<String, Object> notificationRequest = Map.of(
