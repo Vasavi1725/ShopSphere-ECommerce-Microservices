@@ -20,15 +20,17 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final RestClient productRestClient;
     private final RestClient paymentRestClient;
+    private final RestClient notificationRestClient;
 
     public OrderService(
             OrderRepository orderRepository,
             @Qualifier("productRestClient") RestClient productRestClient,
-            @Qualifier("paymentRestClient") RestClient paymentRestClient) {
-
+            @Qualifier("paymentRestClient") RestClient paymentRestClient,
+@Qualifier("notificationRestClient") RestClient notificationRestClient) {
         this.orderRepository = orderRepository;
         this.productRestClient = productRestClient;
         this.paymentRestClient = paymentRestClient;
+        this.notificationRestClient = notificationRestClient;
     }
 
     public List<Order> getAllOrders() {
@@ -204,8 +206,35 @@ public class OrderService {
             return null;
         }
 
-        order.setOrderStatus("CONFIRMED");
-        return orderRepository.save(order);
+       order.setOrderStatus("CONFIRMED");
+Order confirmedOrder = orderRepository.save(order);
+
+// Create a notification record after order confirmation.
+Map<String, Object> notificationRequest = Map.of(
+        "orderId", confirmedOrder.getId(),
+        "recipient", "shopsphere.test@example.com",
+        "type", "ORDER_CONFIRMED",
+        "message", "Your order #" + confirmedOrder.getId()
+                + " has been confirmed."
+);
+
+try {
+    notificationRestClient.post()
+            .uri("/notifications")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(notificationRequest)
+            .retrieve()
+            .toBodilessEntity();
+} catch (RuntimeException exception) {
+    // Keep the confirmed order even if notification creation fails.
+    System.err.println(
+            "Notification creation failed for order "
+                    + confirmedOrder.getId()
+                    + ": " + exception.getMessage()
+    );
+}
+
+return confirmedOrder;
     }
 
     public Order updateOrder(Long id, Order updatedOrder) {
